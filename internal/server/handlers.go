@@ -3,16 +3,42 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"michiru/internal/db"
+	"michiru/internal/repository"
 	"michiru/internal/server/handlers"
 	"michiru/internal/services"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
+// @Router /api/v1/projects [post]
+// @Router /api/v1/projects [get]
+// @Router /api/v1/projects [put]
+// @Router /api/v1/projects [delete]
+// @Router /api/v1/projects/{id} [get]
 func RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/discord", SendMessageHandler).Methods("POST")
-	router.HandleFunc("/github-webhook", handlers.HandleGithubWebhook)
+	dbConn, err := db.Connect()
+    if err != nil {
+        panic(fmt.Sprintf("Failed to connect to the database: %v", err))
+    }
+
+	projectRepo := repository.NewProjectRepository(dbConn)
+	projectHandler := handlers.NewProjectHandler(*projectRepo)
+
+	apiV1 := router.PathPrefix("/api/v1").Subrouter()
+	apiV1.HandleFunc("/discord", SendMessageHandler).Methods("POST")
+	apiV1.HandleFunc("/github-webhook", handlers.HandleGithubWebhook)
+	apiV1.HandleFunc("/projects", projectHandler.CreateProject).Methods("POST")
+    apiV1.HandleFunc("/projects", projectHandler.ListProjects).Methods("GET")
+    apiV1.HandleFunc("/projects/{id}", projectHandler.UpdateProject).Methods("PUT")
+    apiV1.HandleFunc("/projects/{id}", projectHandler.DeleteProject).Methods("DELETE")
+    apiV1.HandleFunc("/projects/{id}", projectHandler.GetProject).Methods("GET")
+
+	
+	
+	router.PathPrefix("/swagger").Handler(httpSwagger.WrapHandler)
 	router.HandleFunc("/", HomeHandler)
 }
 
