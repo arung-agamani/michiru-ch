@@ -14,11 +14,6 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-// @Router /api/v1/projects [post]
-// @Router /api/v1/projects [get]
-// @Router /api/v1/projects [put]
-// @Router /api/v1/projects [delete]
-// @Router /api/v1/projects/{id} [get]
 func RegisterRoutes(router *mux.Router) {
 	dbConn, err := db.Connect()
 	if err != nil {
@@ -27,6 +22,7 @@ func RegisterRoutes(router *mux.Router) {
 
 	projectRepo := repository.NewProjectRepository(dbConn)
 	projectHandler := handlers.NewProjectHandler(*projectRepo)
+	projectWebhookHandler := handlers.NewProjectWebhookHandler(*projectRepo)
 
 	apiV1 := router.PathPrefix("/api/v1").Subrouter()
 	apiV1.HandleFunc("/discord", SendMessageHandler).Methods("POST")
@@ -36,6 +32,9 @@ func RegisterRoutes(router *mux.Router) {
 	apiV1.HandleFunc("/projects/{id}", projectHandler.UpdateProject).Methods("PUT")
 	apiV1.HandleFunc("/projects/{id}", projectHandler.DeleteProject).Methods("DELETE")
 	apiV1.HandleFunc("/projects/{id}", projectHandler.GetProject).Methods("GET")
+	apiV1.HandleFunc("/projects/{id}/webhook", projectWebhookHandler.UpdateWebhook).Methods("PUT")
+	apiV1.HandleFunc("/projects/{id}/webhook", projectWebhookHandler.GenerateWebhook).Methods("POST")
+	apiV1.HandleFunc("/projects/{id}/webhook/{webhookId}", projectWebhookHandler.HandleWebhookPayload).Methods("POST")
 
 	router.PathPrefix("/swagger").Handler(httpSwagger.WrapHandler)
 	router.HandleFunc("/", HomeHandler)

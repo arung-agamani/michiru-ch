@@ -6,6 +6,14 @@ definitions:
       description:
         type: string
     type: object
+  handlers.updateWebhook:
+    properties:
+      webhook_origin:
+        type: string
+      webhook_secret:
+        description: WebhookURL    string `json:"webhook_url"`
+        type: string
+    type: object
   models.Project:
     properties:
       added_by:
@@ -21,6 +29,12 @@ definitions:
       project_name:
         type: string
       updated_at:
+        type: string
+      webhook_origin:
+        type: string
+      webhook_secret:
+        type: string
+      webhook_url:
         type: string
     type: object
   utils.Response:
@@ -266,6 +280,162 @@ paths:
                   type: array
               type: object
       summary: Update a project by ID
+      tags:
+      - projects
+  /api/v1/projects/{id}/webhook:
+    post:
+      consumes:
+      - application/json
+      description: Generates a new webhook for a project using the provided ID
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Project'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
+      summary: Generate a new webhook for a project by ID
+      tags:
+      - projects
+    put:
+      consumes:
+      - application/json
+      description: Updates a project's webhook details using the provided ID and request
+        body
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated project data
+        in: body
+        name: project
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.updateWebhook'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Project'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
+      summary: Update a project's webhook details by ID
+      tags:
+      - projects
+  /api/v1/projects/{id}/webhook/{webhookUrl}:
+    post:
+      consumes:
+      - application/json
+      description: Handles the webhook payload for a project using the provided ID
+        and webhook URL
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Webhook URL
+        in: path
+        name: webhookUrl
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
+      summary: Handle webhook payload
       tags:
       - projects
 swagger: "2.0"

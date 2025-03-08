@@ -24,7 +24,7 @@ func (r *ProjectRepository) Insert(project *models.Project) error {
 
 func (r *ProjectRepository) GetByID(id string) (*models.Project, error) {
 	var project models.Project
-	err := r.DB.Get(&project, "SELECT id, project_name, channel_id, added_by, created_at, updated_at, description FROM projects WHERE id=$1", id)
+	err := r.DB.Get(&project, "SELECT id, project_name, channel_id, added_by, created_at, updated_at, description, webhook_url, webhook_origin FROM projects WHERE id=$1", id)
 	if err != nil {
 		return nil, err
 	}
@@ -39,6 +39,14 @@ func (r *ProjectRepository) Update(project *models.Project) error {
 	return err
 }
 
+func (r *ProjectRepository) UpdateWebhook(project *models.Project) error {
+	_, err := r.DB.Exec(
+		"UPDATE projects SET webhook_origin=$1, webhook_url=$2, webhook_secret=$3 WHERE id=$4",
+		project.WebhookOrigin, project.WebhookURL, project.WebhookSecret, project.ID,
+	)
+	return err
+}
+
 func (r *ProjectRepository) Delete(id string) error {
 	_, err := r.DB.Exec("DELETE FROM projects WHERE id=$1", id)
 	return err
@@ -46,7 +54,7 @@ func (r *ProjectRepository) Delete(id string) error {
 
 func (r *ProjectRepository) List() ([]models.Project, error) {
 	var projects []models.Project
-	err := r.DB.Select(&projects, "SELECT id, project_name, channel_id, added_by, created_at, updated_at, description FROM projects")
+	err := r.DB.Select(&projects, "SELECT id, project_name, channel_id, added_by, created_at, updated_at, description, webhook_origin, webhook_url FROM projects")
 	if err != nil {
 		return nil, err
 	}
