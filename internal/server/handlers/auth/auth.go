@@ -2,14 +2,19 @@ package auth
 
 import (
 	"context"
+	"encoding/base64"
 	"log"
+	"michiru/internal/models"
+	"michiru/internal/repository"
 	"michiru/internal/utils"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/coreos/go-oidc"
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 	"golang.org/x/oauth2"
 )
 
@@ -23,9 +28,10 @@ var (
 	Provider     *oidc.Provider
 	oauth2Config *oauth2.Config
 	Verifier     *oidc.IDTokenVerifier
+	userRepo     *repository.UserRepository
 )
 
-func Init() {
+func Init(db *sqlx.DB) {
 	clientID = os.Getenv("GOOGLE_CLIENT_ID")
 	clientSecret = os.Getenv("GOOGLE_CLIENT_SECRET")
 	redirectURL = os.Getenv("REDIRECT_URL")
@@ -46,10 +52,31 @@ func Init() {
 
 	Provider = p
 	Verifier = p.Verifier(&oidc.Config{ClientID: clientID})
+	userRepo = repository.NewUserRepository(db)
+	InitSessionStore(db)
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, oauth2Config.AuthCodeURL("state"), http.StatusFound)
+}
+
+func Logout(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		http.Error(w, "Failed to read session cookie: "+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	DeleteSession(cookie.Value)
+
+	cookie.Expires = time.Now().AddDate(0, 0, -1)
+	http.SetCookie(w, cookie)
+
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func Callback(w http.ResponseWriter, r *http.Request) {
@@ -77,6 +104,23 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	if err := idToken.Claims(&claims); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	email := claims["email"].(string)
+	username := strings.Split(email, "@")[0]
+
+	_, err = userRepo.GetByEmail(email)
+	if err != nil {
+		user := &models.User{
+			ID:        uuid.New().String(),
+			Username:  username,
+			Email:     email,
+			CreatedAt: time.Now().Format(time.RFC3339),
+		}
+		if err := userRepo.Insert(user); err != nil {
+			http.Error(w, "Failed to create user: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	sessionToken := uuid.New().String()
@@ -125,8 +169,61 @@ func Me(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.WriteSuccessJSON(w, map[string]any{
-		"name":  claims["name"],
-		"email": claims["email"],
-	})
+	email := claims["email"].(string)
+	user, err := userRepo.GetByEmail(email)
+	if err != nil {
+		http.Error(w, "User not found", http.StatusInternalServerError)
+		return
+	}
+
+	utils.WriteSuccessJSON(w, user)
+}
+
+// make handler that will generate an API token for the user
+func GenerateAPIToken(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		http.Error(w, "Failed to read session cookie: "+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	idToken, exists := GetSession(cookie.Value)
+	if !exists {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	ctx := context.Background()
+	token, err := Verifier.Verify(ctx, idToken)
+	if err != nil {
+		http.Error(w, "Failed to verify ID token: "+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	var claims map[string]any
+	if err := token.Claims(&claims); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	email := claims["email"].(string)
+	_, err = userRepo.GetByEmail(email)
+	if err != nil {
+		http.Error(w, "User not found", http.StatusInternalServerError)
+		return
+	}
+
+	// generate a new API token in base64
+	newAPIToken := base64.StdEncoding.EncodeToString([]byte(uuid.New().String()))
+	user, err := userRepo.SetAPIToken(email, newAPIToken)
+	if err != nil {
+		http.Error(w, "Failed to generate API token", http.StatusInternalServerError)
+		return
+	}
+
+	utils.WriteSuccessJSON(w, user)
 }

@@ -1,0 +1,4 @@
+CREATE UNLOGGED TABLE sessions (
+    key VARCHAR(255) PRIMARY KEY,
+    value TEXT NOT NULL
+);

@@ -22,14 +22,15 @@ func RegisterRoutes(router *mux.Router) {
 		panic(fmt.Sprintf("Failed to connect to the database: %v", err))
 	}
 
-	auth.Init()
-	middleware.Init(auth.Verifier)
+	auth.Init(dbConn)
+	middleware.Init(auth.Verifier, dbConn)
 
 	projectRepo := repository.NewProjectRepository(dbConn)
 	projectHandler := handlers.NewProjectHandler(*projectRepo)
 	projectWebhookHandler := handlers.NewProjectWebhookHandler(*projectRepo)
 
 	router.HandleFunc("/auth/login", auth.Login)
+	router.HandleFunc("/auth/logout", auth.Logout)
 	router.HandleFunc("/auth/callback", auth.Callback)
 
 	apiV1 := router.PathPrefix("/api/v1").Subrouter()
@@ -38,6 +39,7 @@ func RegisterRoutes(router *mux.Router) {
 	authRouter := router.PathPrefix("/auth").Subrouter()
 	authRouter.Use(middleware.AuthMiddleware)
 	authRouter.HandleFunc("/me", auth.Me).Methods("GET")
+	authRouter.HandleFunc("/me/genereate-api-key", auth.GenerateAPIToken).Methods("POST")
 	apiV1.HandleFunc("/discord", SendMessageHandler).Methods("POST")
 	apiV1.HandleFunc("/github-webhook", handlers.HandleGithubWebhook)
 	apiV1.HandleFunc("/projects", projectHandler.CreateProject).Methods("POST")
@@ -47,7 +49,9 @@ func RegisterRoutes(router *mux.Router) {
 	apiV1.HandleFunc("/projects/{id}", projectHandler.GetProject).Methods("GET")
 	apiV1.HandleFunc("/projects/{id}/webhook", projectWebhookHandler.UpdateWebhook).Methods("PUT")
 	apiV1.HandleFunc("/projects/{id}/webhook", projectWebhookHandler.GenerateWebhook).Methods("POST")
-	apiV1.HandleFunc("/projects/{id}/webhook/{webhookId}", projectWebhookHandler.HandleWebhookPayload).Methods("POST")
+
+	// Publicly accessible endpoint for GitHub webhooks
+	router.HandleFunc("/api/v1/projects/{id}/webhook/{webhookId}", projectWebhookHandler.HandleWebhookPayload).Methods("POST")
 
 	router.PathPrefix("/swagger").Handler(httpSwagger.WrapHandler)
 	router.HandleFunc("/", HomeHandler)

@@ -1,23 +1,36 @@
 package auth
 
 import (
-	"sync"
+	"log"
+
+	"github.com/jmoiron/sqlx"
 )
 
-var sessionStore = struct {
-	sync.RWMutex
-	sessions map[string]string
-}{sessions: make(map[string]string)}
+var db *sqlx.DB
+
+func InitSessionStore(database *sqlx.DB) {
+	db = database
+}
 
 func SetSession(key, value string) {
-	sessionStore.Lock()
-	defer sessionStore.Unlock()
-	sessionStore.sessions[key] = value
+	_, err := db.Exec("INSERT INTO sessions (key, value) VALUES ($1, $2)", key, value)
+	if err != nil {
+		log.Printf("Failed to insert session: %v", err)
+	}
 }
 
 func GetSession(key string) (string, bool) {
-	sessionStore.RLock()
-	defer sessionStore.RUnlock()
-	value, ok := sessionStore.sessions[key]
-	return value, ok
+	var value string
+	err := db.Get(&value, "SELECT value FROM sessions WHERE key=$1", key)
+	if err != nil {
+		return "", false
+	}
+	return value, true
+}
+
+func DeleteSession(key string) {
+	_, err := db.Exec("DELETE FROM sessions WHERE key=$1", key)
+	if err != nil {
+		log.Printf("Failed to delete session: %v", err)
+	}
 }
