@@ -33,8 +33,8 @@ func (r *ProjectRepository) GetByID(id string) (*models.Project, error) {
 
 func (r *ProjectRepository) Update(project *models.Project) error {
 	_, err := r.DB.Exec(
-		"UPDATE projects SET project_name=$1, channel_id=$2, added_by=$3, updated_at=NOW(), description=$4 WHERE id=$5",
-		project.ProjectName, project.ChannelID, project.AddedBy, project.Description, project.ID,
+		"UPDATE projects SET channel_id=$1, description=$2, updated_at=NOW() WHERE id=$3",
+		project.ChannelID, project.Description, project.ID,
 	)
 	return err
 }

@@ -1,4 +1,11 @@
 definitions:
+  handlers.updateData:
+    properties:
+      channel_id:
+        type: string
+      description:
+        type: string
+    type: object
   models.Project:
     properties:
       added_by:
@@ -30,58 +37,7 @@ definitions:
 info:
   contact: {}
 paths:
-  /api/v1/projects/{id}:
-    get: {}
-  /projects:
-    delete:
-      consumes:
-      - application/json
-      description: Deletes a project using the provided ID
-      parameters:
-      - description: Project ID
-        in: query
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  additionalProperties:
-                    type: string
-                  type: object
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                error:
-                  items:
-                    type: string
-                  type: array
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                error:
-                  items:
-                    type: string
-                  type: array
-              type: object
-      summary: Delete a project by ID
-      tags:
-      - projects
+  /api/v1/projects:
     get:
       consumes:
       - application/json
@@ -162,13 +118,110 @@ paths:
       summary: Create a new project
       tags:
       - projects
+  /api/v1/projects/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a project using the provided ID
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
+      summary: Delete a project by ID
+      tags:
+      - projects
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a single project using the provided ID
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Project'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
+      summary: Get a project by ID
+      tags:
+      - projects
     put:
       consumes:
       - application/json
       description: Updates a project's details using the provided ID and request body
       parameters:
       - description: Project ID
-        in: query
+        in: path
         name: id
         required: true
         type: string
@@ -177,7 +230,7 @@ paths:
         name: project
         required: true
         schema:
-          $ref: '#/definitions/models.Project'
+          $ref: '#/definitions/handlers.updateData'
       produces:
       - application/json
       responses:

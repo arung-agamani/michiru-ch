@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	_ "michiru/docs"
 	"michiru/internal/db"
 	"michiru/internal/repository"
 	"michiru/internal/server/handlers"
@@ -20,9 +21,9 @@ import (
 // @Router /api/v1/projects/{id} [get]
 func RegisterRoutes(router *mux.Router) {
 	dbConn, err := db.Connect()
-    if err != nil {
-        panic(fmt.Sprintf("Failed to connect to the database: %v", err))
-    }
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect to the database: %v", err))
+	}
 
 	projectRepo := repository.NewProjectRepository(dbConn)
 	projectHandler := handlers.NewProjectHandler(*projectRepo)
@@ -31,13 +32,11 @@ func RegisterRoutes(router *mux.Router) {
 	apiV1.HandleFunc("/discord", SendMessageHandler).Methods("POST")
 	apiV1.HandleFunc("/github-webhook", handlers.HandleGithubWebhook)
 	apiV1.HandleFunc("/projects", projectHandler.CreateProject).Methods("POST")
-    apiV1.HandleFunc("/projects", projectHandler.ListProjects).Methods("GET")
-    apiV1.HandleFunc("/projects/{id}", projectHandler.UpdateProject).Methods("PUT")
-    apiV1.HandleFunc("/projects/{id}", projectHandler.DeleteProject).Methods("DELETE")
-    apiV1.HandleFunc("/projects/{id}", projectHandler.GetProject).Methods("GET")
+	apiV1.HandleFunc("/projects", projectHandler.ListProjects).Methods("GET")
+	apiV1.HandleFunc("/projects/{id}", projectHandler.UpdateProject).Methods("PUT")
+	apiV1.HandleFunc("/projects/{id}", projectHandler.DeleteProject).Methods("DELETE")
+	apiV1.HandleFunc("/projects/{id}", projectHandler.GetProject).Methods("GET")
 
-	
-	
 	router.PathPrefix("/swagger").Handler(httpSwagger.WrapHandler)
 	router.HandleFunc("/", HomeHandler)
 }
@@ -48,7 +47,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 
 type MessageRequest struct {
 	ChannelID string `json:"channel"`
-	Message string `json:"message"`
+	Message   string `json:"message"`
 }
 
 func SendMessageHandler(w http.ResponseWriter, r *http.Request) {
