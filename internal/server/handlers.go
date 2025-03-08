@@ -7,6 +7,8 @@ import (
 	"michiru/internal/db"
 	"michiru/internal/repository"
 	"michiru/internal/server/handlers"
+	"michiru/internal/server/handlers/auth"
+	"michiru/internal/server/middleware"
 	"michiru/internal/services"
 	"net/http"
 
@@ -20,11 +22,22 @@ func RegisterRoutes(router *mux.Router) {
 		panic(fmt.Sprintf("Failed to connect to the database: %v", err))
 	}
 
+	auth.Init()
+	middleware.Init(auth.Verifier)
+
 	projectRepo := repository.NewProjectRepository(dbConn)
 	projectHandler := handlers.NewProjectHandler(*projectRepo)
 	projectWebhookHandler := handlers.NewProjectWebhookHandler(*projectRepo)
 
+	router.HandleFunc("/auth/login", auth.Login)
+	router.HandleFunc("/auth/callback", auth.Callback)
+
 	apiV1 := router.PathPrefix("/api/v1").Subrouter()
+	apiV1.Use(middleware.AuthMiddleware)
+
+	authRouter := router.PathPrefix("/auth").Subrouter()
+	authRouter.Use(middleware.AuthMiddleware)
+	authRouter.HandleFunc("/me", auth.Me).Methods("GET")
 	apiV1.HandleFunc("/discord", SendMessageHandler).Methods("POST")
 	apiV1.HandleFunc("/github-webhook", handlers.HandleGithubWebhook)
 	apiV1.HandleFunc("/projects", projectHandler.CreateProject).Methods("POST")

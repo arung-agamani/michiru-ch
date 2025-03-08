@@ -19,9 +19,12 @@ Also because I want to further apply the knowledge I learned about building auto
 
 The following table shows the environment variable used.
 | Variable Name | Description | Required |
-|--------------------|-----------------------------------|----------|
+|---------------------|--------------------------------------|----------|
 | `DATABASE_URL` | URL for connecting to Postgres DB | Yes |
-| `DISCORD_BOT_TOKEN`| Token for authenticating the bot | Yes |
+| `DISCORD_BOT_TOKEN` | Token for authenticating the bot | Yes |
+| `GOOGLE_CLIENT_ID` | Client ID for Google OAuth 2.0 | Yes |
+| `GOOGLE_CLIENT_SECRET` | Client Secret for Google OAuth 2.0 | Yes |
+| `REDIRECT_URL` | Redirect URL for OAuth 2.0 callback | Yes |
 
 ## Installation
 
@@ -41,6 +44,14 @@ To install Michiru Ch., follow these steps:
     ```
 
 ## Usage
+
+> **Warning:** Before running the application, ensure that you have run the necessary database migrations. You can do this by executing:
+>
+> ```sh
+> ./michiru-ch migrate
+> ```
+>
+> This step is crucial if the database has not been set up yet.
 
 1. Run the application:
     ```sh
