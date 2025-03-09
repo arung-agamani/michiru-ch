@@ -5,6 +5,7 @@ import (
 	"michiru/internal/repository"
 	"michiru/internal/server/handlers/auth"
 	"net/http"
+	"strings"
 
 	"github.com/coreos/go-oidc"
 	"github.com/jmoiron/sqlx"
@@ -25,6 +26,20 @@ const idTokenKey contextKey = "id_token"
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// check for bearer token
+		authHeader := r.Header.Get("Authorization")
+		if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
+			bearerToken := strings.TrimPrefix(authHeader, "Bearer ")
+			if bearerToken != "" {
+				user, err := userRepo.GetByAPIToken(bearerToken)
+				if user != nil && err == nil {
+					ctx := context.WithValue(r.Context(), "user", user)
+					next.ServeHTTP(w, r.WithContext(ctx))
+					return
+				}
+			}
+		}
+
 		cookie, err := r.Cookie("session_token")
 		if err != nil {
 			if err == http.ErrNoCookie {
