@@ -7,6 +7,8 @@
     "npm:@types/react-dom@^19.0.4": "19.0.4_@types+react@19.0.10",
     "npm:@types/react@^19.0.10": "19.0.10",
     "npm:@vitejs/plugin-react-swc@^3.8.0": "3.8.0_vite@6.2.1",
+    "npm:jotai@^2.12.2": "2.12.2_@types+react@19.0.10_react@19.0.0",
+    "npm:ky@^1.7.5": "1.7.5",
     "npm:react-dom@19": "19.0.0_react@19.0.0",
     "npm:react-router-dom@^7.3.0": "7.3.0_react@19.0.0_react-dom@19.0.0__react@19.0.0",
     "npm:react@19": "19.0.0",
@@ -362,6 +364,16 @@
     "jiti@2.4.2": {
       "integrity": "sha512-rg9zJN+G4n2nfJl5MW3BMygZX56zKPNVEYYqq7adpmMh4Jn2QNEwhvQlFy6jPVdcod7txZtKHWnyZiA3a0zP7A=="
     },
+    "jotai@2.12.2_@types+react@19.0.10_react@19.0.0": {
+      "integrity": "sha512-oN8715y7MkjXlSrpyjlR887TOuc/NLZMs9gvgtfWH/JP47ChwO0lR2ijSwBvPMYyXRAPT+liIAhuBavluKGgtA==",
+      "dependencies": [
+        "@types/react",
+        "react"
+      ]
+    },
+    "ky@1.7.5": {
+      "integrity": "sha512-HzhziW6sc5m0pwi5M196+7cEBtbt0lCYi67wNsiwMUmz833wloE0gbzJPWKs1gliFKQb34huItDQX97LyOdPdA=="
+    },
     "lightningcss-darwin-arm64@1.29.2": {
       "integrity": "sha512-cK/eMabSViKn/PG8U/a7aCorpeKLMlK0bQeNHmdb7qUnBkNPnL+oV5DjJUo0kqWsJUapZsM4jCfYItbqBDvlcA=="
     },
@@ -526,6 +538,8 @@
       "npm:@types/react-dom@^19.0.4",
       "npm:@types/react@^19.0.10",
       "npm:@vitejs/plugin-react-swc@^3.8.0",
+      "npm:jotai@^2.12.2",
+      "npm:ky@^1.7.5",
       "npm:react-dom@19",
       "npm:react-router-dom@^7.3.0",
       "npm:react@19",

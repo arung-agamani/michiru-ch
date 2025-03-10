@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import IndexPage from "./pages/Index.tsx";
 import LoginPage from "./pages/Login.tsx";
+import ProtectedRoute from "./components/ProtectedRoute.tsx";
+import AppIndexPage from "./pages/App/index.tsx";
 
 function App() {
     return (
@@ -8,6 +10,9 @@ function App() {
             <Routes>
                 <Route path="/" element={<IndexPage />} />
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/app" element={<ProtectedRoute />}>
+                    <Route index element={<AppIndexPage />} />
+                </Route>
             </Routes>
         </BrowserRouter>
     );
