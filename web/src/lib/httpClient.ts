@@ -1,5 +1,11 @@
 import ky from "ky";
 
+export interface APIResponse<T> {
+    status: boolean;
+    error: string[];
+    data: T;
+}
+
 const httpClient = ky.create({
     prefixUrl: "/api/v1",
     headers: {
