@@ -57,7 +57,12 @@ func Init(db *sqlx.DB) {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, oauth2Config.AuthCodeURL("state"), http.StatusFound)
+	redirect_URI := r.URL.Query().Get("redirect_uri")
+	if redirect_URI == "" {
+		redirect_URI = "/"
+	}
+	oauthURL := oauth2Config.AuthCodeURL(redirect_URI)
+	http.Redirect(w, r, oauthURL, http.StatusFound)
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
@@ -136,7 +141,11 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, cookie)
-	http.Redirect(w, r, "/", http.StatusFound)
+	redirectURL := r.URL.Query().Get("state")
+	if redirectURL == "" {
+		redirectURL = "/"
+	}
+	http.Redirect(w, r, redirectURL, http.StatusFound)
 }
 
 func Me(w http.ResponseWriter, r *http.Request) {

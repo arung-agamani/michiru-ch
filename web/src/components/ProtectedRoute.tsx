@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAtom } from "jotai";
 import { authStateAtom } from "../state/auth.ts";
 import Sidebar from "./Sidebar.tsx";
@@ -11,14 +11,13 @@ const queryClient = new QueryClient();
 const ProtectedRoute: React.FC = () => {
     const [authState, setAuthState] = useAtom(authStateAtom);
     const location = useLocation();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const checkAuth = async () => {
             try {
                 const response = await fetch("/auth/me", {
-                    headers: {
-                        "Access-Control-Allow-Origin": "*",
-                    },
+                    redirect: "manual",
                 });
                 if (response.ok) {
                     // console.log(response);
@@ -27,26 +26,45 @@ const ProtectedRoute: React.FC = () => {
                     setAuthState({ user: userData, expiry });
                 } else {
                     setAuthState({ user: null, expiry: null });
+                    navigate("/login", {
+                        state: {
+                            from:
+                                globalThis.window.location.protocol +
+                                "//" +
+                                globalThis.window.location.host +
+                                location.pathname +
+                                location.search,
+                        },
+                    });
                 }
             } catch (error) {
                 console.error("Failed to fetch user data:", error);
                 setAuthState({ user: null, expiry: null });
+                navigate("/login", {
+                    state: {
+                        from:
+                            globalThis.window.location.protocol +
+                            "//" +
+                            globalThis.window.location.host +
+                            location.pathname +
+                            location.search,
+                    },
+                });
             }
         };
-        console.log("Route change, checking auth...");
         if (
             authState.user === null ||
             (authState.expiry !== null && authState.expiry < Date.now())
         ) {
             checkAuth();
         }
-    }, [authState, setAuthState, location]);
+    }, [location]);
 
-    if (authState === null) {
+    if (authState.user === null) {
         return <div>Loading...</div>;
     }
 
-    return authState ? (
+    return (
         <QueryClientProvider client={queryClient}>
             <div className="flex">
                 <Sidebar />
@@ -56,8 +74,6 @@ const ProtectedRoute: React.FC = () => {
             </div>
             <ReactQueryDevtools />
         </QueryClientProvider>
-    ) : (
-        <Navigate to="/login" />
     );
 };
 

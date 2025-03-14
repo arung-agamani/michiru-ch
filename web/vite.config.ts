@@ -8,8 +8,14 @@ export default defineConfig({
     plugins: [deno(), react(), tailwindcss()],
     server: {
         proxy: {
-            "/api": "http://localhost:8080",
-            "/auth": "http://localhost:8080",
+            "/api": {
+                target: "http://localhost:8080",
+                changeOrigin: true,
+            },
+            "/auth": {
+                target: "http://localhost:8080",
+                changeOrigin: true,
+            },
         },
     },
 });

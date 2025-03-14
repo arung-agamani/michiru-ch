@@ -1,7 +1,15 @@
+import { useLocation } from "react-router-dom";
+
 const LoginPage = () => {
+    const location = useLocation();
     const handleGoogleSignIn = () => {
-        // Redirect to your backend's Google OAuth login endpoint
-        globalThis.window.location.href = "/auth/login";
+        const currentURI =
+            location.state?.from ||
+            `${globalThis.window.location.hostname}/app`;
+        console.log("Redirecting to:", currentURI);
+        globalThis.window.location.href = `/auth/login?redirect_uri=${encodeURIComponent(
+            currentURI
+        )}`;
     };
 
     return (

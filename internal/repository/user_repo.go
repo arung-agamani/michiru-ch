@@ -39,3 +39,12 @@ func (r *UserRepository) SetAPIToken(email, token string) (*models.User, error) 
 
 	return r.GetByEmail(email)
 }
+
+func (r *UserRepository) GetByAPIToken(token string) (*models.User, error) {
+	var user models.User
+	err := r.DB.Get(&user, "SELECT id, username, email, created_at, api_token FROM users WHERE api_token=$1", token)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}

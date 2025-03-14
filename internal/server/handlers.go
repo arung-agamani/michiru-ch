@@ -13,6 +13,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -55,6 +56,15 @@ func RegisterRoutes(router *mux.Router) {
 
 	router.PathPrefix("/swagger").Handler(httpSwagger.WrapHandler)
 	router.HandleFunc("/", HomeHandler)
+
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"localhost:5173", "https://michiru.howlingmoon.dev"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
+		AllowCredentials: true,
+	})
+
+	router.Use(corsHandler.Handler)
 }
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
