@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 const Sidebar: React.FC = () => {
     return (
         <div className="h-screen w-64 bg-gray-800 text-white flex flex-col">
-            <div className="p-4 text-2xl font-bold">My App</div>
+            <div className="p-4 text-2xl font-bold">Michiru Ch.</div>
             <nav className="flex-1 p-4">
                 <ul>
                     <li className="mb-2">
@@ -13,14 +13,6 @@ const Sidebar: React.FC = () => {
                             className="block p-2 rounded hover:bg-gray-700"
                         >
                             Home
-                        </Link>
-                    </li>
-                    <li className="mb-2">
-                        <Link
-                            to="/app/dashboard"
-                            className="block p-2 rounded hover:bg-gray-700"
-                        >
-                            Dashboard
                         </Link>
                     </li>
                     <li className="mb-2">

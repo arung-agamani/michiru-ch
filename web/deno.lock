@@ -5,6 +5,7 @@
     "npm:@tailwindcss/vite@^4.0.12": "4.0.12_vite@6.2.1_@types+node@22.12.0_lightningcss@1.29.2",
     "npm:@tanstack/react-query-devtools@^5.67.3": "5.67.3_@tanstack+react-query@5.67.3__react@19.0.0_react@19.0.0",
     "npm:@tanstack/react-query@^5.67.3": "5.67.3_react@19.0.0",
+    "npm:@tanstack/react-table@^8.21.2": "8.21.2_react@19.0.0_react-dom@19.0.0__react@19.0.0",
     "npm:@types/node@*": "22.12.0",
     "npm:@types/react-dom@^19.0.4": "19.0.4_@types+react@19.0.10",
     "npm:@types/react@^19.0.10": "19.0.10",
@@ -303,6 +304,17 @@
         "react"
       ]
     },
+    "@tanstack/react-table@8.21.2_react@19.0.0_react-dom@19.0.0__react@19.0.0": {
+      "integrity": "sha512-11tNlEDTdIhMJba2RBH+ecJ9l1zgS2kjmexDPAraulc8jeNA4xocSNeyzextT0XJyASil4XsCYlJmf5jEWAtYg==",
+      "dependencies": [
+        "@tanstack/table-core",
+        "react",
+        "react-dom"
+      ]
+    },
+    "@tanstack/table-core@8.21.2": {
+      "integrity": "sha512-uvXk/U4cBiFMxt+p9/G7yUWI/UbHYbyghLCjlpWZ3mLeIZiUBSKcUnw9UnKkdRz7Z/N4UBuFLWQdJCjUe7HjvA=="
+    },
     "@types/cookie@0.6.0": {
       "integrity": "sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA=="
     },
@@ -568,6 +580,7 @@
       "npm:@tailwindcss/vite@^4.0.12",
       "npm:@tanstack/react-query-devtools@^5.67.3",
       "npm:@tanstack/react-query@^5.67.3",
+      "npm:@tanstack/react-table@^8.21.2",
       "npm:@types/react-dom@^19.0.4",
       "npm:@types/react@^19.0.10",
       "npm:@vitejs/plugin-react-swc@^3.8.0",

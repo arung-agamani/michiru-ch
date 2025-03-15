@@ -1,10 +1,11 @@
 import React, { useEffect } from "react";
-import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAtom } from "jotai";
-import { authStateAtom } from "../state/auth.ts";
+import { authStateAtom, User } from "../state/auth.ts";
 import Sidebar from "./Sidebar.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { APIResponse } from "../lib/httpClient.ts";
 
 const queryClient = new QueryClient();
 
@@ -20,10 +21,10 @@ const ProtectedRoute: React.FC = () => {
                     redirect: "manual",
                 });
                 if (response.ok) {
-                    // console.log(response);
-                    const userData = await response.json();
+                    const userData =
+                        (await response.json()) as APIResponse<User>;
                     const expiry = Date.now() + 3600 * 1000; // 1 hour expiry
-                    setAuthState({ user: userData, expiry });
+                    setAuthState({ user: userData.data, expiry });
                 } else {
                     setAuthState({ user: null, expiry: null });
                     navigate("/login", {
