@@ -18,14 +18,9 @@ migrate-db:
 	@echo "Migrating the database..."
 	@$(MIGRATE_CMD) migrate
 
-# Create new migration files
+# Create new migration files=
 new-migration:
-	@read -p "Enter migration name: " name; \
-	version=$$(date +%Y%m%d%H%M%S); \
-	up_file="$(MIGRATIONS_DIR)/$${version}_$${name}.up.sql"; \
-	down_file="$(MIGRATIONS_DIR)/$${version}_$${name}.down.sql"; \
-	touch $$up_file $$down_file; \
-	@echo "Created migration files: $$up_file and $$down_file"
+	deno run --allow-read --allow-write ./scripts/create_migration.ts
 
 # Help
 help:

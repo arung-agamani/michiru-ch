@@ -24,6 +24,7 @@ func (r *ProjectRepository) Insert(project *models.Project) error {
 
 func (r *ProjectRepository) GetByID(id string) (*models.Project, error) {
 	var project models.Project
+	// TODO: verify if id is a valid UUID
 	err := r.DB.Get(&project, "SELECT id, project_name, channel_id, added_by, created_at, updated_at, description, webhook_url, webhook_origin FROM projects WHERE id=$1", id)
 	if err != nil {
 		return nil, err
