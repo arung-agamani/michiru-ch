@@ -9,7 +9,7 @@ type Project struct {
 	CreatedAt        string  `json:"created_at" db:"created_at"`
 	UpdatedAt        string  `json:"updated_at" db:"updated_at"`
 	Description      string  `json:"description,omitempty" db:"description"`
-	WebhookOrigin    string  `json:"webhook_origin,omitempty" db:"webhook_origin"`
-	WebhookURL       string  `json:"webhook_url,omitempty" db:"webhook_url"`
-	WebhookSecret    string  `json:"webhook_secret,omitempty" db:"webhook_secret"`
+	WebhookOrigin    *string `json:"webhook_origin,omitempty" db:"webhook_origin"`
+	WebhookURL       *string `json:"webhook_url,omitempty" db:"webhook_url"`
+	WebhookSecret    *string `json:"webhook_secret,omitempty" db:"webhook_secret"`
 }

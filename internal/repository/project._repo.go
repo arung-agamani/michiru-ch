@@ -55,7 +55,7 @@ func (r *ProjectRepository) Delete(id string) error {
 
 func (r *ProjectRepository) List() ([]models.Project, error) {
 	var projects []models.Project
-	err := r.DB.Select(&projects, "SELECT id, project_name, channel_id, added_by, created_at, updated_at, description, webhook_origin, webhook_url FROM projects")
+	err := r.DB.Select(&projects, "SELECT id, project_name, channel_id, added_by, created_at, updated_at, description, COALESCE(webhook_origin, '') webhook_origin, COALESCE(webhook_url, '') webhook_url FROM projects")
 	if err != nil {
 		return nil, err
 	}

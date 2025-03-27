@@ -64,9 +64,9 @@ func (h *ProjectWebhookHandler) UpdateWebhook(w http.ResponseWriter, r *http.Req
 	}
 
 	project.ID = id
-	project.WebhookOrigin = updateWebhook.WebhookOrigin
+	project.WebhookOrigin = &updateWebhook.WebhookOrigin
 	// project.WebhookURL = updateWebhook.WebhookURL
-	project.WebhookSecret = updateWebhook.WebhookSecret
+	project.WebhookSecret = &updateWebhook.WebhookSecret
 
 	if err := h.Repo.UpdateWebhook(project); err != nil {
 		log.Printf("Error updating project webhook: %v", err)
@@ -104,12 +104,14 @@ func (h *ProjectWebhookHandler) GenerateWebhook(w http.ResponseWriter, r *http.R
 	}
 
 	project.ID = id
-	project.WebhookOrigin = "github"
+	origin := "github"
+	project.WebhookOrigin = &origin
 
 	uuidValue := uuid.New()
 	encodedUUID := base64.StdEncoding.EncodeToString([]byte(uuidValue.String()))
-	project.WebhookURL = encodedUUID
-	project.WebhookSecret = ""
+	project.WebhookURL = &encodedUUID
+	emptySecret := ""
+	project.WebhookSecret = &emptySecret
 
 	if err := h.Repo.UpdateWebhook(project); err != nil {
 		log.Printf("Error updating project webhook: %v", err)
@@ -154,13 +156,13 @@ func (h *ProjectWebhookHandler) HandleWebhookPayload(w http.ResponseWriter, r *h
 		utils.WriteBadRequestJSON(w, []string{"Missing webhook URL"})
 		return
 	}
-	if project.WebhookURL != webhookUrl {
+	if project.WebhookURL == nil || *project.WebhookURL != webhookUrl {
 		log.Printf("Invalid webhook URL")
 		utils.WriteBadRequestJSON(w, []string{"Invalid webhook URL"})
 		return
 	}
 
-	hook, _ := github.New(github.Options.Secret(project.WebhookSecret))
+	hook, _ := github.New(github.Options.Secret(*project.WebhookSecret))
 	payload, err := hook.Parse(r, github.PushEvent)
 	if err != nil {
 		if err == github.ErrEventNotFound {

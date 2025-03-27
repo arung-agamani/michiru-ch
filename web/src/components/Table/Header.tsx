@@ -7,7 +7,7 @@ type Props = {
     isFirst?: boolean;
     isLast?: boolean;
     colSpan?: number;
-    [key: string]: any;
+    [key: string]: unknown;
 };
 
 export const HeaderCell: React.FC<Props> = ({

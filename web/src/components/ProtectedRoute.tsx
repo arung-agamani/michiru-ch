@@ -6,6 +6,7 @@ import Sidebar from "./Sidebar.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { APIResponse } from "../lib/httpClient.ts";
+import AppWrapper from "./AppWrapper.tsx";
 
 const queryClient = new QueryClient();
 
@@ -67,12 +68,12 @@ const ProtectedRoute: React.FC = () => {
 
     return (
         <QueryClientProvider client={queryClient}>
-            <div className="flex">
+            <AppWrapper>
                 <Sidebar />
                 <div className="main-wrapper p-4 bg-gray-50 w-full">
                     <Outlet />
                 </div>
-            </div>
+            </AppWrapper>
             <ReactQueryDevtools />
         </QueryClientProvider>
     );
