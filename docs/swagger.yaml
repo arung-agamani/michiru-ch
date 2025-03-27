@@ -14,6 +14,11 @@ definitions:
         description: WebhookURL    string `json:"webhook_url"`
         type: string
     type: object
+  models.DiscordMessage:
+    properties:
+      template:
+        type: string
+    type: object
   models.Project:
     properties:
       added_by:
@@ -27,6 +32,8 @@ definitions:
       id:
         type: string
       project_name:
+        type: string
+      project_source_url:
         type: string
       updated_at:
         type: string
@@ -282,6 +289,64 @@ paths:
       summary: Update a project by ID
       tags:
       - projects
+  /api/v1/projects/{id}/send-message:
+    post:
+      consumes:
+      - application/json
+      description: Sends a message to the Discord channel associated with the specified
+        project ID. The message is rendered using a Go template provided in the request
+        body.
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Message payload with template
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.DiscordMessage'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
+      summary: Send a message to a Discord channel
+      tags:
+      - projects
   /api/v1/projects/{id}/webhook:
     post:
       consumes:
@@ -438,4 +503,28 @@ paths:
       summary: Handle webhook payload
       tags:
       - projects
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refreshes the session token if the current session is valid.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Session refreshed successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Refresh the session token
+      tags:
+      - auth
 swagger: "2.0"

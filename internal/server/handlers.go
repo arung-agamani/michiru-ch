@@ -33,6 +33,7 @@ func RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/auth/login", auth.Login)
 	router.HandleFunc("/auth/logout", auth.Logout)
 	router.HandleFunc("/auth/callback", auth.Callback)
+	router.HandleFunc("/auth/refresh", auth.RefreshToken)
 
 	apiV1 := router.PathPrefix("/api/v1").Subrouter()
 	apiV1.Use(middleware.AuthMiddleware)
@@ -48,6 +49,7 @@ func RegisterRoutes(router *mux.Router) {
 	apiV1.HandleFunc("/projects/{id}", projectHandler.UpdateProject).Methods("PUT")
 	apiV1.HandleFunc("/projects/{id}", projectHandler.DeleteProject).Methods("DELETE")
 	apiV1.HandleFunc("/projects/{id}", projectHandler.GetProject).Methods("GET")
+	apiV1.HandleFunc("/projects/{id}/send-message", projectHandler.SendMessageToChannel).Methods("POST")
 	apiV1.HandleFunc("/projects/{id}/webhook", projectWebhookHandler.UpdateWebhook).Methods("PUT")
 	apiV1.HandleFunc("/projects/{id}/webhook", projectWebhookHandler.GenerateWebhook).Methods("POST")
 

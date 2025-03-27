@@ -435,6 +435,104 @@ var doc = `{
                 }
             }
         },
+        "/api/v1/projects/{id}/send-message": {
+            "post": {
+                "description": "Sends a message to the Discord channel associated with the specified project ID. The message is rendered using a Go template provided in the request body.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "projects"
+                ],
+                "summary": "Send a message to a Discord channel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Message payload with template",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DiscordMessage"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/projects/{id}/webhook": {
             "put": {
                 "description": "Updates a project's webhook details using the provided ID and request body",
@@ -706,6 +804,42 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/auth/refresh": {
+            "post": {
+                "description": "Refreshes the session token if the current session is valid.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Refresh the session token",
+                "responses": {
+                    "200": {
+                        "description": "Session refreshed successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -732,6 +866,14 @@ var doc = `{
                 }
             }
         },
+        "models.DiscordMessage": {
+            "type": "object",
+            "properties": {
+                "template": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Project": {
             "type": "object",
             "properties": {
@@ -751,6 +893,9 @@ var doc = `{
                     "type": "string"
                 },
                 "project_name": {
+                    "type": "string"
+                },
+                "project_source_url": {
                     "type": "string"
                 },
                 "updated_at": {

@@ -236,3 +236,54 @@ func GenerateAPIToken(w http.ResponseWriter, r *http.Request) {
 
 	utils.WriteSuccessJSON(w, user)
 }
+
+// RefreshToken godoc
+// @Summary      Refresh the session token
+// @Description  Refreshes the session token if the current session is valid.
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Success      200 {object} map[string]interface{} "Session refreshed successfully"
+// @Failure      401 {string} string "Unauthorized"
+// @Failure      500 {string} string "Internal Server Error"
+// @Router       /auth/refresh [post]
+func RefreshToken(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		http.Error(w, "Failed to read session cookie: "+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	idToken, exists := GetSession(cookie.Value)
+	if !exists {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	ctx := context.Background()
+	_, err = Verifier.Verify(ctx, idToken)
+	if err != nil {
+		http.Error(w, "Failed to verify ID token: "+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	newSessionToken := uuid.New().String()
+	SetSession(newSessionToken, idToken)
+
+	cookie = &http.Cookie{
+		Name:     "session_token",
+		Value:    newSessionToken,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		Expires:  time.Now().Add(24 * time.Hour),
+	}
+
+	http.SetCookie(w, cookie)
+	utils.WriteSuccessJSON(w, nil)
+
+}

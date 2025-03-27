@@ -5,8 +5,11 @@ import (
 	"log"
 	"michiru/internal/models"
 	"michiru/internal/repository"
+	"michiru/internal/services"
 	"michiru/internal/utils"
 	"net/http"
+	"strings"
+	"text/template"
 	"time"
 
 	"github.com/google/uuid"
@@ -182,4 +185,67 @@ func (h *ProjectHandler) DeleteProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.WriteSuccessJSON(w, map[string]string{"message": "Project deleted successfully"})
+}
+
+// SendMessageToChannel godoc
+// @Summary      Send a message to a Discord channel
+// @Description  Sends a message to the Discord channel associated with the specified project ID. The message is rendered using a Go template provided in the request body.
+// @Tags         projects
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "Project ID"
+// @Param        message body models.DiscordMessage true "Message payload with template"
+// @Success      200 {object} utils.Response{data=map[string]string}
+// @Failure      400 {object} utils.Response{error=[]string}
+// @Failure      500 {object} utils.Response{error=[]string}
+// @Router       /api/v1/projects/{id}/send-message [post]
+func (h *ProjectHandler) SendMessageToChannel(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	if id == "" {
+		utils.WriteBadRequestJSON(w, []string{"Missing project ID"})
+		return
+	}
+
+	var message models.DiscordMessage
+	if err := json.NewDecoder(r.Body).Decode(&message); err != nil {
+		utils.WriteBadRequestJSON(w, []string{"Invalid request payload"})
+		return
+	}
+
+	project, err := h.Repo.GetByID(id)
+	if err != nil {
+		log.Printf("Error getting project: %v", err)
+		utils.WriteInternalServerErrorJSON(w, []string{"Failed to retrieve project"})
+		return
+	}
+
+	discordService, err := services.NewDiscordService()
+	if err != nil {
+		log.Printf("Error initializing Discord service: %v", err)
+		utils.WriteInternalServerErrorJSON(w, []string{"Failed to initialize Discord service"})
+		return
+	}
+
+	tmpl, err := template.New("message").Parse(message.Template)
+	if err != nil {
+		log.Printf("Error parsing message template: %v", err)
+		utils.WriteBadRequestJSON(w, []string{"Invalid template formate"})
+		return
+	}
+
+	var renderedMessage strings.Builder
+	if err := tmpl.Execute(&renderedMessage, project); err != nil {
+		log.Printf("Error rendering message template: %v", err)
+		utils.WriteInternalServerErrorJSON(w, []string{"Failed to render message template"})
+		return
+	}
+
+	if err := discordService.SendMessage(project.ChannelID, renderedMessage.String()); err != nil {
+		log.Printf("Error sending message: %v", err)
+		utils.WriteInternalServerErrorJSON(w, []string{"Failed to send message"})
+		return
+	}
+
+	utils.WriteSuccessJSON(w, map[string]string{"message": "Message sent successfully"})
 }

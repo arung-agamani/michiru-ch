@@ -21,12 +21,12 @@ export const TextField: React.FC<TextFieldProps> = ({
         <div
             className={cn(
                 "grid grid-cols-2 items-center",
-                stacked && "flex flex-col items-start gap-y-2"
+                stacked && "flex flex-col items-start pb-4"
             )}
         >
             <label className="font-bold">{label}</label>
             {!editMode ? (
-                <span>
+                <span className="text-xl">
                     {formState.defaultValues?.[register.name] ?? "No data"}
                 </span>
             ) : (
