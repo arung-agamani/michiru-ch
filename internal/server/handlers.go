@@ -44,7 +44,7 @@ func RegisterRoutes(router *mux.Router) {
 	projectHandler := handlers.NewProjectHandler(*projectRepo)
 	projectWebhookHandler := handlers.NewProjectWebhookHandler(*projectRepo)
 	templateHandler := handlers.NewTemplateHandler(templateRepo)
-	predefinedTemplateHandler := handlers.NewPredefinedTemplateHandler(predefinedTemplateRepo)
+	predefinedTemplateHandler := handlers.NewPredefinedTemplateHandler(*predefinedTemplateRepo)
 
 	router.HandleFunc("/auth/login", auth.Login)
 	router.HandleFunc("/auth/logout", auth.Logout)
@@ -76,6 +76,7 @@ func RegisterRoutes(router *mux.Router) {
 
 	apiV1.HandleFunc("/predefined-templates", predefinedTemplateHandler.GetPredefinedTemplates).Methods("GET")
 	apiV1.HandleFunc("/predefined-templates", predefinedTemplateHandler.AddPredefinedTemplate).Methods("POST")
+	apiV1.HandleFunc("/predefined-templates/{templateID}", predefinedTemplateHandler.GetPredefinedTemplateByID).Methods("GET")
 	apiV1.HandleFunc("/predefined-templates/{templateID}", predefinedTemplateHandler.UpdatePredefinedTemplate).Methods("PUT")
 	apiV1.HandleFunc("/predefined-templates/{templateID}", predefinedTemplateHandler.DeletePredefinedTemplate).Methods("DELETE")
 

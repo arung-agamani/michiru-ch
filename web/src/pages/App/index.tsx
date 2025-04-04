@@ -15,6 +15,14 @@ const AppIndexPage = () => {
                     Go to Projects
                 </Link>
             </div>
+            <div className="mt-4 p-4 bg-green-100 rounded-lg">
+                <Link
+                    to="predefined-templates"
+                    className="text-green-700 hover:underline"
+                >
+                    Predefined Templates
+                </Link>
+            </div>
         </div>
     );
 };

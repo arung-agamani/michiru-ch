@@ -9,7 +9,9 @@ import (
 	"michiru/internal/utils"
 	"net/http"
 
+	"bytes"
 	"encoding/base64"
+	"text/template"
 
 	"github.com/go-playground/webhooks/v6/github"
 	"github.com/google/uuid"
@@ -179,7 +181,38 @@ func (h *ProjectWebhookHandler) HandleWebhookPayload(w http.ResponseWriter, r *h
 	case github.PushPayload:
 		push := payload
 		log.Printf("Received push event for %s", push.Repository.FullName)
-		sendPushEventNotification(push, project)
+
+		templateRepo := repository.NewTemplateRepository(h.Repo.DB)
+		templates, err := templateRepo.GetByProjectID(id)
+		if err != nil {
+			log.Printf("Error getting templates: %v", err)
+			utils.WriteInternalServerErrorJSON(w, []string{"Failed to retrieve templates"})
+			return
+		}
+
+		var templateContent string
+		for _, template := range templates {
+			if template.EventType == "push" {
+				templateContent = template.Template
+				break
+			}
+		}
+
+		if templateContent == "" {
+			log.Printf("No template found for push event")
+			utils.WriteBadRequestJSON(w, []string{"No template found for push event"})
+			return
+		}
+
+		message := formatTemplate(templateContent, map[string]interface{}{
+			"Repository":    push.Repository.FullName,
+			"CommitMessage": push.Commits[0].Message,
+			"CommitURL":     push.Commits[0].URL,
+			"Pusher":        push.Pusher.Name,
+			"Branch":        push.Ref,
+		})
+
+		sendPushEventNotification(message, project)
 		utils.WriteSuccessJSON(w, "Received push event")
 	default:
 		log.Printf("Received unsupported event")
@@ -188,7 +221,24 @@ func (h *ProjectWebhookHandler) HandleWebhookPayload(w http.ResponseWriter, r *h
 	}
 }
 
-func sendPushEventNotification(payload github.PushPayload, project *models.Project) {
+func formatTemplate(templateContent string, data map[string]interface{}) string {
+	// Use Go's text/template package to format the template
+	tmpl, err := template.New("webhookTemplate").Parse(templateContent)
+	if err != nil {
+		log.Printf("Error parsing template: %v", err)
+		return "Error formatting template"
+	}
+
+	var formattedMessage bytes.Buffer
+	if err := tmpl.Execute(&formattedMessage, data); err != nil {
+		log.Printf("Error executing template: %v", err)
+		return "Error formatting template"
+	}
+
+	return formattedMessage.String()
+}
+
+func sendPushEventNotification(message string, project *models.Project) {
 	// Send a notification to the Discord channel
 	discordService, err := services.NewDiscordService()
 	if err != nil {
@@ -196,14 +246,7 @@ func sendPushEventNotification(payload github.PushPayload, project *models.Proje
 		return
 	}
 
-	message := "New push event on repository " + payload.Repository.FullName
-	message += "\nCommit message: " + payload.Commits[0].Message
-	message += "\nCommit URL: " + payload.Commits[0].URL
-	message += "\nPusher: " + payload.Pusher.Name
-	message += "\nBranch: " + payload.Ref
-
 	if err := discordService.SendMessage(project.ChannelID, message); err != nil {
 		log.Printf("Error sending message: %v", err)
 	}
-
 }

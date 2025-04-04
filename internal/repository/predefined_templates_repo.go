@@ -15,41 +15,42 @@ func NewPredefinedTemplateRepository(db *sqlx.DB) *PredefinedTemplateRepository 
 }
 
 func (r *PredefinedTemplateRepository) GetAll() ([]models.PredefinedTemplate, error) {
-	query := `SELECT id, event_type, template, description, created_at, updated_at FROM predefined_templates`
-	rows, err := r.DB.Query(query)
+	var templates []models.PredefinedTemplate
+	err := r.DB.Select(&templates, `SELECT id, event_type, template, description, created_at, updated_at FROM predefined_templates`)
 	if err != nil {
 		return nil, err
-	}
-	defer rows.Close()
-
-	var templates []models.PredefinedTemplate
-	for rows.Next() {
-		var template models.PredefinedTemplate
-		if err := rows.Scan(&template.ID, &template.EventType, &template.Template, &template.Description, &template.CreatedAt, &template.UpdatedAt); err != nil {
-			return nil, err
-		}
-		templates = append(templates, template)
 	}
 	return templates, nil
 }
 
-func (r *PredefinedTemplateRepository) Add(template *models.PredefinedTemplate) error {
-	query := `INSERT INTO predefined_templates (event_type, template, description) 
-              VALUES ($1, $2, $3) RETURNING id`
-	return r.DB.QueryRow(query, template.EventType, template.Template, template.Description).
-		Scan(&template.ID)
+func (r *PredefinedTemplateRepository) GetByID(id int) (*models.PredefinedTemplate, error) {
+	var template models.PredefinedTemplate
+	err := r.DB.Get(&template, `SELECT id, event_type, template, description, created_at, updated_at FROM predefined_templates WHERE id = $1`, id)
+	if err != nil {
+		return nil, err
+	}
+	return &template, nil
+}
+
+func (r *PredefinedTemplateRepository) Insert(template *models.PredefinedTemplate) error {
+	return r.DB.QueryRow(
+		`INSERT INTO predefined_templates (event_type, template, description, created_at, updated_at) 
+         VALUES ($1, $2, $3, NOW(), NOW()) RETURNING id`,
+		template.EventType, template.Template, template.Description,
+	).Scan(&template.ID)
 }
 
 func (r *PredefinedTemplateRepository) Update(template *models.PredefinedTemplate) error {
-	query := `UPDATE predefined_templates 
-              SET event_type = $1, template = $2, description = $3, updated_at = CURRENT_TIMESTAMP 
-              WHERE id = $4`
-	_, err := r.DB.Exec(query, template.EventType, template.Template, template.Description, template.ID)
+	_, err := r.DB.Exec(
+		`UPDATE predefined_templates 
+         SET event_type = $1, template = $2, description = $3, updated_at = NOW() 
+         WHERE id = $4`,
+		template.EventType, template.Template, template.Description, template.ID,
+	)
 	return err
 }
 
 func (r *PredefinedTemplateRepository) Delete(id int) error {
-	query := `DELETE FROM predefined_templates WHERE id = $1`
-	_, err := r.DB.Exec(query, id)
+	_, err := r.DB.Exec(`DELETE FROM predefined_templates WHERE id = $1`, id)
 	return err
 }

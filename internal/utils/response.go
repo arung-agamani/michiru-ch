@@ -6,9 +6,9 @@ import (
 )
 
 type Response struct {
-	Success bool `json:"status"`
-	Error []string `json:"error"`
-	Data interface{} `json:"data"`
+	Success bool        `json:"status"`
+	Error   []string    `json:"error"`
+	Data    interface{} `json:"data"`
 }
 
 func WriteJSONResponse(w http.ResponseWriter, statusCode int, success bool, errors []string, data interface{}) {
@@ -17,8 +17,8 @@ func WriteJSONResponse(w http.ResponseWriter, statusCode int, success bool, erro
 
 	response := Response{
 		Success: success,
-		Error: errors,
-		Data: data,
+		Error:   errors,
+		Data:    data,
 	}
 
 	json.NewEncoder(w).Encode(response)
@@ -34,4 +34,8 @@ func WriteBadRequestJSON(w http.ResponseWriter, errors []string) {
 
 func WriteInternalServerErrorJSON(w http.ResponseWriter, errors []string) {
 	WriteJSONResponse(w, http.StatusInternalServerError, false, errors, nil)
+}
+
+func WriteNotFoundJSON(w http.ResponseWriter, errors []string) {
+	WriteJSONResponse(w, http.StatusNotFound, false, errors, nil)
 }
