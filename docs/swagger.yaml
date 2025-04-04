@@ -19,6 +19,24 @@ definitions:
       template:
         type: string
     type: object
+  models.PredefinedTemplate:
+    properties:
+      created_at:
+        type: string
+      description:
+        description: Optional description
+        type: string
+      event_type:
+        description: Event type (e.g., "push", "pull_request")
+        type: string
+      id:
+        type: integer
+      template:
+        description: Template content
+        type: string
+      updated_at:
+        type: string
+    type: object
   models.Project:
     properties:
       added_by:
@@ -44,6 +62,27 @@ definitions:
       webhook_url:
         type: string
     type: object
+  models.Template:
+    properties:
+      created_at:
+        type: string
+      description:
+        description: Optional description
+        type: string
+      event_type:
+        description: Event type (e.g., "push", "pull_request")
+        type: string
+      id:
+        type: integer
+      project_id:
+        description: Foreign key to Project
+        type: string
+      template:
+        description: Template content
+        type: string
+      updated_at:
+        type: string
+    type: object
   utils.Response:
     properties:
       data:
@@ -58,6 +97,109 @@ definitions:
 info:
   contact: {}
 paths:
+  /api/v1/predefined-templates:
+    get:
+      description: Retrieve all predefined templates
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.PredefinedTemplate'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all predefined templates
+      tags:
+      - PredefinedTemplates
+    post:
+      description: Create a new predefined template
+      parameters:
+      - description: Predefined template data
+        in: body
+        name: template
+        required: true
+        schema:
+          $ref: '#/definitions/models.PredefinedTemplate'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.PredefinedTemplate'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add a new predefined template
+      tags:
+      - PredefinedTemplates
+  /api/v1/predefined-templates/{templateID}:
+    delete:
+      description: Delete a predefined template by its ID
+      parameters:
+      - description: Template ID
+        in: path
+        name: templateID
+        required: true
+        type: string
+      responses:
+        "204":
+          description: ""
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a predefined template
+      tags:
+      - PredefinedTemplates
+    put:
+      description: Update the details of an existing predefined template
+      parameters:
+      - description: Template ID
+        in: path
+        name: templateID
+        required: true
+        type: string
+      - description: Updated predefined template data
+        in: body
+        name: template
+        required: true
+        schema:
+          $ref: '#/definitions/models.PredefinedTemplate'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PredefinedTemplate'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update an existing predefined template
+      tags:
+      - PredefinedTemplates
   /api/v1/projects:
     get:
       consumes:
@@ -503,6 +645,115 @@ paths:
       summary: Handle webhook payload
       tags:
       - projects
+  /api/v1/projects/{projectID}/templates:
+    get:
+      description: Retrieve all templates associated with a specific project
+      parameters:
+      - description: Project ID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Template'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all templates for a project
+      tags:
+      - Templates
+    post:
+      description: Create a new template for a project
+      parameters:
+      - description: Template data
+        in: body
+        name: template
+        required: true
+        schema:
+          $ref: '#/definitions/models.Template'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Template'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add a new template
+      tags:
+      - Templates
+  /api/v1/templates/{templateID}:
+    delete:
+      description: Delete a template by its ID
+      parameters:
+      - description: Template ID
+        in: path
+        name: templateID
+        required: true
+        type: string
+      responses:
+        "204":
+          description: ""
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a template
+      tags:
+      - Templates
+    put:
+      description: Update the details of an existing template
+      parameters:
+      - description: Template ID
+        in: path
+        name: templateID
+        required: true
+        type: string
+      - description: Updated template data
+        in: body
+        name: template
+        required: true
+        schema:
+          $ref: '#/definitions/models.Template'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Template'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update an existing template
+      tags:
+      - Templates
   /auth/refresh:
     post:
       consumes:

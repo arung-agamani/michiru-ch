@@ -11,11 +11,22 @@ import (
 	"michiru/internal/server/middleware"
 	"michiru/internal/services"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
+
+// @title Michiru API
+// @version 1.0
+// @description API documentation for Michiru
+// @host localhost:8080
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @security BearerAuth
 
 func RegisterRoutes(router *mux.Router) {
 	dbConn, err := db.Connect()
@@ -27,8 +38,13 @@ func RegisterRoutes(router *mux.Router) {
 	middleware.Init(auth.Verifier, dbConn)
 
 	projectRepo := repository.NewProjectRepository(dbConn)
+	templateRepo := repository.NewTemplateRepository(dbConn)
+	predefinedTemplateRepo := repository.NewPredefinedTemplateRepository(dbConn)
+
 	projectHandler := handlers.NewProjectHandler(*projectRepo)
 	projectWebhookHandler := handlers.NewProjectWebhookHandler(*projectRepo)
+	templateHandler := handlers.NewTemplateHandler(templateRepo)
+	predefinedTemplateHandler := handlers.NewPredefinedTemplateHandler(predefinedTemplateRepo)
 
 	router.HandleFunc("/auth/login", auth.Login)
 	router.HandleFunc("/auth/logout", auth.Logout)
@@ -52,6 +68,16 @@ func RegisterRoutes(router *mux.Router) {
 	apiV1.HandleFunc("/projects/{id}/send-message", projectHandler.SendMessageToChannel).Methods("POST")
 	apiV1.HandleFunc("/projects/{id}/webhook", projectWebhookHandler.UpdateWebhook).Methods("PUT")
 	apiV1.HandleFunc("/projects/{id}/webhook", projectWebhookHandler.GenerateWebhook).Methods("POST")
+	apiV1.HandleFunc("/projects/{projectID}/templates", templateHandler.GetTemplates).Methods("GET")
+	apiV1.HandleFunc("/projects/{projectID}/templates", templateHandler.AddTemplate).Methods("POST")
+
+	apiV1.HandleFunc("/templates/{templateID}", templateHandler.UpdateTemplate).Methods("PUT")
+	apiV1.HandleFunc("/templates/{templateID}", templateHandler.DeleteTemplate).Methods("DELETE")
+
+	apiV1.HandleFunc("/predefined-templates", predefinedTemplateHandler.GetPredefinedTemplates).Methods("GET")
+	apiV1.HandleFunc("/predefined-templates", predefinedTemplateHandler.AddPredefinedTemplate).Methods("POST")
+	apiV1.HandleFunc("/predefined-templates/{templateID}", predefinedTemplateHandler.UpdatePredefinedTemplate).Methods("PUT")
+	apiV1.HandleFunc("/predefined-templates/{templateID}", predefinedTemplateHandler.DeletePredefinedTemplate).Methods("DELETE")
 
 	// Publicly accessible endpoint for GitHub webhooks
 	router.HandleFunc("/api/v1/projects/{id}/webhook/{webhookId}", projectWebhookHandler.HandleWebhookPayload).Methods("POST")
@@ -59,8 +85,16 @@ func RegisterRoutes(router *mux.Router) {
 	router.PathPrefix("/swagger").Handler(httpSwagger.WrapHandler)
 	router.HandleFunc("/", HomeHandler)
 
+	corsAllowedOrigins := os.Getenv("CORS_ALLOWED_ORIGINS")
+	var allowedOrigins []string
+	if corsAllowedOrigins != "" {
+		allowedOrigins = strings.Split(corsAllowedOrigins, ",")
+	} else {
+		allowedOrigins = []string{"localhost:5173", "localhost:8080", "https://michiru.howlingmoon.dev"}
+	}
+
 	corsHandler := cors.New(cors.Options{
-		AllowedOrigins:   []string{"localhost:5173", "https://michiru.howlingmoon.dev"},
+		AllowedOrigins:   allowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},
 		AllowCredentials: true,

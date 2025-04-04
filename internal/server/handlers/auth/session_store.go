@@ -6,6 +6,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// TODO: figure out better way to store sessions
 var db *sqlx.DB
 
 func InitSessionStore(database *sqlx.DB) {
