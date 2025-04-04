@@ -70,7 +70,7 @@ const ProtectedRoute: React.FC = () => {
         <QueryClientProvider client={queryClient}>
             <AppWrapper>
                 <Sidebar />
-                <div className="main-wrapper p-4 bg-gray-50 w-full">
+                <div className="main-wrapper bg-gray-50 w-full max-h-dvh overflow-y-scroll">
                     <Outlet />
                 </div>
             </AppWrapper>

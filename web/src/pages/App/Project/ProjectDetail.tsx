@@ -6,6 +6,12 @@ import { Project } from "./types.ts";
 import TextField from "../../../components/TextField.tsx";
 import TextArea from "../../../components/TextArea.tsx";
 import { useState } from "react";
+import {
+    SectionDescription,
+    SectionTitle,
+} from "../../../components/Typography.tsx";
+import EventTemplateMapping from "../../../components/ProjectDetail/EventTemplateMapping.tsx";
+import { FullscreenLoader } from "../../../components/Loader.tsx";
 
 type ProjectResponse = APIResponse<Project>;
 
@@ -62,8 +68,8 @@ const ProjectDetailPage = () => {
         const messageData = (await res.json()).data;
         console.log(messageData);
     };
-    if (!isSuccess || !populated) {
-        return <div>Loading...</div>;
+    if (!isSuccess || !populated || !projectId) {
+        return <FullscreenLoader />;
     }
     return (
         <div className="p-4">
@@ -81,6 +87,12 @@ const ProjectDetailPage = () => {
             <FormProvider {...projectDetailForm}>
                 {/* TODO: make form for updating project */}
                 <div className="bg-white shadow-md rounded p-4 grid grid-cols-2 gap-x-2 mt-4 ">
+                    <div className="col-span-2 mb-4">
+                        <SectionTitle>Project Details</SectionTitle>
+                        <SectionDescription>
+                            View and manage project details
+                        </SectionDescription>
+                    </div>
                     <div className="flex flex-col">
                         <TextField
                             label="Project Name"
@@ -131,7 +143,7 @@ const ProjectDetailPage = () => {
                             </button>
                         )}
                     </div>
-                    <div className="flex flex-col">
+                    {/* <div className="flex flex-col">
                         <div className="mb-4">
                             <h2 className="font-semibold">Added By</h2>
                             <p>{data.added_by}</p>
@@ -173,11 +185,36 @@ const ProjectDetailPage = () => {
                         >
                             {data.webhook_url && "Re-"}Generate Webhook URL
                         </button>
-                    </div>
+                    </div> */}
                 </div>
             </FormProvider>
             <div className="bg-white shadow-md rounded p-4 mt-4">
-                <p className="text-2xl font-semibold">Send Message</p>
+                <div className="flex justify-between">
+                    <div>
+                        <SectionTitle>Event Template Mapping</SectionTitle>
+                        <SectionDescription>
+                            Control the template used when responding to
+                            different events received
+                        </SectionDescription>
+                    </div>
+                    <div>
+                        <Link
+                            to={`event-templates/add`}
+                            className="rounded-xl p-2 text-white font-bold hover:bg-blue-500 bg-blue-400 ml-auto hover:cursor-pointer"
+                        >
+                            Add Event Template
+                        </Link>
+                    </div>
+                </div>
+                <EventTemplateMapping projectId={projectId} />
+            </div>
+            <div className="bg-white shadow-md rounded p-4 mt-4">
+                <SectionTitle>Send Test Message</SectionTitle>
+                <SectionDescription>
+                    Send a test message to the configured Discord channel using
+                    the template provided
+                </SectionDescription>
+                <div className="my-2" />
                 <form
                     onSubmit={sendMessageForm.handleSubmit(sendTestMessage)}
                     className="grid grid-cols-1 gap-y-4"

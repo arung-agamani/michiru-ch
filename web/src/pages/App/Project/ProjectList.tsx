@@ -11,6 +11,7 @@ import { useForm } from "react-hook-form";
 import TextArea from "../../../components/TextArea.tsx";
 import { useAtom } from "jotai";
 import { authStateAtom } from "../../../state/auth.ts";
+import { PageTitle, SectionTitle } from "../../../components/Typography.tsx";
 
 type ProjectListResponse = APIResponse<Project[]>;
 
@@ -85,9 +86,9 @@ const ProjectListPage = () => {
         await projectMutation.mutateAsync(payload);
     };
     return (
-        <div className="w-full">
+        <div className="w-full p-4">
             <div className="flex mb-4">
-                <h2 className="text-2xl font-semibold">Projects</h2>
+                <PageTitle>Projects</PageTitle>
                 <button
                     onClick={() => setDrawerOpen(true)}
                     type="button"
@@ -97,6 +98,8 @@ const ProjectListPage = () => {
                 </button>
             </div>
             <hr className="my-4" />
+            <SectionTitle>View and manage projects</SectionTitle>
+            <div className="my-2"></div>
             <DataTable columns={columns} data={data} contained />
             <Drawer isOpen={drawerOpen} onDismiss={() => setDrawerOpen(false)}>
                 <div className="bg-white shadow-md p-4 h-full max-h-dvh overflow-y-auto min-w-xl">

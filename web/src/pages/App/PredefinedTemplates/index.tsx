@@ -47,7 +47,7 @@ const PredefinedTemplatesPage = () => {
     ];
 
     return (
-        <div className="w-full">
+        <div className="w-full p-4">
             <div className="flex mb-4">
                 <h2 className="text-2xl font-semibold">Predefined Templates</h2>
                 <Link

@@ -43,7 +43,7 @@ func RegisterRoutes(router *mux.Router) {
 
 	projectHandler := handlers.NewProjectHandler(*projectRepo)
 	projectWebhookHandler := handlers.NewProjectWebhookHandler(*projectRepo)
-	templateHandler := handlers.NewTemplateHandler(templateRepo)
+	templateHandler := handlers.NewTemplateHandler(*templateRepo)
 	predefinedTemplateHandler := handlers.NewPredefinedTemplateHandler(*predefinedTemplateRepo)
 
 	router.HandleFunc("/auth/login", auth.Login)

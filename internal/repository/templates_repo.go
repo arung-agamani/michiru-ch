@@ -14,9 +14,12 @@ func NewTemplateRepository(db *sqlx.DB) *TemplateRepository {
 	return &TemplateRepository{DB: db}
 }
 
-func (r *TemplateRepository) Create(template *models.Template) error {
+func (r *TemplateRepository) Insert(template *models.Template) error {
 	query := `INSERT INTO templates (project_id, event_type, template, description) 
-              VALUES ($1, $2, $3, $4) RETURNING id`
+              VALUES ($1, $2, $3, $4) 
+              ON CONFLICT (project_id, event_type) 
+              DO UPDATE SET template = EXCLUDED.template, description = EXCLUDED.description, updated_at = CURRENT_TIMESTAMP 
+              RETURNING id`
 	return r.DB.QueryRow(query, template.ProjectID, template.EventType, template.Template, template.Description).
 		Scan(&template.ID)
 }
@@ -39,6 +42,17 @@ func (r *TemplateRepository) GetByProjectID(projectID string) ([]models.Template
 		templates = append(templates, template)
 	}
 	return templates, nil
+}
+
+func (r *TemplateRepository) GetByID(templateID string) (*models.Template, error) {
+	query := `SELECT id, project_id, event_type, template, description, created_at, updated_at 
+			  FROM templates WHERE id = $1`
+	var template models.Template
+	err := r.DB.Get(&template, query, templateID)
+	if err != nil {
+		return nil, err
+	}
+	return &template, nil
 }
 
 func (r *TemplateRepository) Update(template *models.Template) error {

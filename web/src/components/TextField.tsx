@@ -26,7 +26,7 @@ export const TextField: React.FC<TextFieldProps> = ({
         >
             <label className="font-bold">{label}</label>
             {!editMode ? (
-                <span className="text-xl">
+                <span className="text-xl leading-[34px]">
                     {formState.defaultValues?.[register.name] ?? "No data"}
                 </span>
             ) : (

@@ -5,7 +5,7 @@ import { useAtom } from "jotai";
 const AppIndexPage = () => {
     const [authData] = useAtom(authStateAtom);
     return (
-        <div>
+        <div className="p-4">
             <h1 className="text-4xl font-semibold">
                 Good Day, {authData.user?.username}
             </h1>

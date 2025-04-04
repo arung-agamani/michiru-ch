@@ -204,13 +204,7 @@ func (h *ProjectWebhookHandler) HandleWebhookPayload(w http.ResponseWriter, r *h
 			return
 		}
 
-		message := formatTemplate(templateContent, map[string]interface{}{
-			"Repository":    push.Repository.FullName,
-			"CommitMessage": push.Commits[0].Message,
-			"CommitURL":     push.Commits[0].URL,
-			"Pusher":        push.Pusher.Name,
-			"Branch":        push.Ref,
-		})
+		message := formatTemplate(templateContent, payload)
 
 		sendPushEventNotification(message, project)
 		utils.WriteSuccessJSON(w, "Received push event")
@@ -221,7 +215,7 @@ func (h *ProjectWebhookHandler) HandleWebhookPayload(w http.ResponseWriter, r *h
 	}
 }
 
-func formatTemplate(templateContent string, data map[string]interface{}) string {
+func formatTemplate(templateContent string, data any) string {
 	// Use Go's text/template package to format the template
 	tmpl, err := template.New("webhookTemplate").Parse(templateContent)
 	if err != nil {

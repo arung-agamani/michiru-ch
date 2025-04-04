@@ -72,34 +72,45 @@ function DataTable<TData extends RowData>({
                 ))}
             </thead>
             <tbody>
-                {table.getRowModel().rows.map((row) => (
-                    <tr
-                        key={row.id}
-                        className={cn(
-                            contained ? "" : "flex",
-                            "hover:bg-gray-200"
-                        )}
-                    >
-                        {row.getVisibleCells().map((cell, idx) => (
-                            <BodyCell
-                                key={cell.id}
-                                className={cn(
-                                    "p-2",
-                                    contained
-                                        ? ""
-                                        : "flex items-center justify-between"
-                                )}
-                                columnWidth={cell.column.getSize()}
-                                isFirst={idx === 0}
-                            >
-                                {flexRender(
-                                    cell.column.columnDef.cell,
-                                    cell.getContext()
-                                )}
-                            </BodyCell>
-                        ))}
+                {table.getRowModel().rows.length === 0 ? (
+                    <tr>
+                        <td
+                            colSpan={columns.length}
+                            className="text-center p-4 text-gray-500"
+                        >
+                            No data
+                        </td>
                     </tr>
-                ))}
+                ) : (
+                    table.getRowModel().rows.map((row) => (
+                        <tr
+                            key={row.id}
+                            className={cn(
+                                contained ? "" : "flex",
+                                "hover:bg-gray-200"
+                            )}
+                        >
+                            {row.getVisibleCells().map((cell, idx) => (
+                                <BodyCell
+                                    key={cell.id}
+                                    className={cn(
+                                        "p-2",
+                                        contained
+                                            ? ""
+                                            : "flex items-center justify-between"
+                                    )}
+                                    columnWidth={cell.column.getSize()}
+                                    isFirst={idx === 0}
+                                >
+                                    {flexRender(
+                                        cell.column.columnDef.cell,
+                                        cell.getContext()
+                                    )}
+                                </BodyCell>
+                            ))}
+                        </tr>
+                    ))
+                )}
             </tbody>
         </table>
     );

@@ -9,6 +9,7 @@ import ProjectListPage from "./pages/App/Project/ProjectList.tsx";
 import PredefinedTemplatesPage from "./pages/App/PredefinedTemplates/index.tsx";
 import AddTemplatePage from "./pages/App/PredefinedTemplates/AddTemplate.tsx";
 import TemplateDetailPage from "./pages/App/PredefinedTemplates/TemplateDetail.tsx";
+import AddProjectEventTemplate from "./pages/App/Project/AddProjectEventTemplate.tsx";
 
 function App() {
     return (
@@ -21,6 +22,7 @@ function App() {
                     <Route path="dashboard" element={<DashboardPage />} />
                     <Route path="projects" element={<ProjectListPage />} />
                     <Route path="projects/:projectId" element={<ProjectDetailPage />} />
+                    <Route path="projects/:projectId/event-templates/add" element={<AddProjectEventTemplate />} />
                     <Route path="predefined-templates" element={<PredefinedTemplatesPage />} />
                     <Route path="predefined-templates/add" element={<AddTemplatePage />} />
                     <Route path="predefined-templates/:id" element={<TemplateDetailPage />} />
