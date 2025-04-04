@@ -7,7 +7,7 @@ import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import { Drawer } from "../../../components/Drawer.tsx";
 import { TextField } from "../../../components/TextField.tsx";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import TextArea from "../../../components/TextArea.tsx";
 import { useAtom } from "jotai";
 import { authStateAtom } from "../../../state/auth.ts";
@@ -104,45 +104,47 @@ const ProjectListPage = () => {
             <Drawer isOpen={drawerOpen} onDismiss={() => setDrawerOpen(false)}>
                 <div className="bg-white shadow-md p-4 h-full max-h-dvh overflow-y-auto min-w-xl">
                     <h2 className="text-2xl font-semibold">Create Project</h2>
-                    <form onSubmit={handleSubmit(onSubmit)}>
-                        <div className="mb-4">
-                            <TextField
-                                label="Project Name"
-                                register={register("project_name")}
-                                stacked
-                                placeholder="Name of your project"
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <TextArea
-                                label="Description"
-                                register={register("description")}
-                                placeholder="Description of your project"
-                                stacked
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <TextField
-                                label="Channel ID"
-                                register={register("channel_id")}
-                                placeholder="Channel ID of target Discord Text channel"
-                                stacked
-                            />
-                        </div>
-                        {/* <div className="mb-4">
+                    <FormProvider {...drawerForm}>
+                        <form onSubmit={handleSubmit(onSubmit)}>
+                            <div className="mb-4">
+                                <TextField
+                                    label="Project Name"
+                                    register={register("project_name")}
+                                    stacked
+                                    placeholder="Name of your project"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <TextArea
+                                    label="Description"
+                                    register={register("description")}
+                                    placeholder="Description of your project"
+                                    stacked
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <TextField
+                                    label="Channel ID"
+                                    register={register("channel_id")}
+                                    placeholder="Channel ID of target Discord Text channel"
+                                    stacked
+                                />
+                            </div>
+                            {/* <div className="mb-4">
                             <TextArea
                                 label="Source Repository"
                                 register={register("project_source_url")}
                                 placeholder="Source repository URL"
                             />
                         </div> */}
-                        <button
-                            type="submit"
-                            className="rounded-xl p-2 text-white font-bold hover:bg-blue-500 bg-blue-400 ml-auto hover:cursor-pointer"
-                        >
-                            Create
-                        </button>
-                    </form>
+                            <button
+                                type="submit"
+                                className="rounded-xl p-2 text-white font-bold hover:bg-blue-500 bg-blue-400 ml-auto hover:cursor-pointer"
+                            >
+                                Create
+                            </button>
+                        </form>
+                    </FormProvider>
                 </div>
             </Drawer>
         </div>
