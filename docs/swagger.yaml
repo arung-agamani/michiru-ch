@@ -1,4 +1,13 @@
 definitions:
+  handlers.AddPredefinedTemplateRequest:
+    properties:
+      description:
+        type: string
+      event_type:
+        type: string
+      template:
+        type: string
+    type: object
   handlers.updateData:
     properties:
       channel_id:
@@ -50,6 +59,8 @@ definitions:
       id:
         type: string
       project_name:
+        type: string
+      project_source_auth_token:
         type: string
       project_source_url:
         type: string
@@ -104,15 +115,25 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/models.PredefinedTemplate'
-            type: array
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.PredefinedTemplate'
+                  type: array
+              type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
       summary: Get all predefined templates
       tags:
       - PredefinedTemplates
@@ -124,24 +145,39 @@ paths:
         name: template
         required: true
         schema:
-          $ref: '#/definitions/models.PredefinedTemplate'
+          $ref: '#/definitions/handlers.AddPredefinedTemplateRequest'
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.PredefinedTemplate'
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.PredefinedTemplate'
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
       summary: Add a new predefined template
       tags:
       - PredefinedTemplates
@@ -157,13 +193,83 @@ paths:
       responses:
         "204":
           description: ""
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
       summary: Delete a predefined template
+      tags:
+      - PredefinedTemplates
+    get:
+      description: Retrieve a predefined template by its ID
+      parameters:
+      - description: Template ID
+        in: path
+        name: templateID
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.PredefinedTemplate'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
+      summary: Get a predefined template by ID
       tags:
       - PredefinedTemplates
     put:
@@ -184,19 +290,34 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.PredefinedTemplate'
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.PredefinedTemplate'
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
       summary: Update an existing predefined template
       tags:
       - PredefinedTemplates
@@ -489,6 +610,61 @@ paths:
       summary: Send a message to a Discord channel
       tags:
       - projects
+  /api/v1/projects/{id}/source:
+    put:
+      consumes:
+      - application/json
+      description: Updates a project's source authentication token using the provided
+        ID and request body
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated project data
+        in: body
+        name: project
+        required: true
+        schema:
+          $ref: '#/definitions/models.Project'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Project'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
+      summary: Update a project's source authentication token by ID
+      tags:
+      - projects
   /api/v1/projects/{id}/webhook:
     post:
       consumes:
@@ -658,15 +834,25 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/models.Template'
-            type: array
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Template'
+                  type: array
+              type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
       summary: Get all templates for a project
       tags:
       - Templates
@@ -683,20 +869,85 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.Template'
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Template'
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
       summary: Add a new template
+      tags:
+      - Templates
+  /api/v1/projects/{projectID}/templates/event-type/{eventType}:
+    get:
+      description: Retrieve a template associated with a specific project and event
+        type
+      parameters:
+      - description: Project ID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: Event type
+        in: path
+        name: eventType
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Template'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
+      summary: Get a template by event type
       tags:
       - Templates
   /api/v1/templates/{templateID}:
@@ -711,12 +962,28 @@ paths:
       responses:
         "204":
           description: ""
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
       summary: Delete a template
       tags:
       - Templates
@@ -738,19 +1005,34 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Template'
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Template'
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                error:
+                  items:
+                    type: string
+                  type: array
+              type: object
       summary: Update an existing template
       tags:
       - Templates

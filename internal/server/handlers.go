@@ -68,8 +68,10 @@ func RegisterRoutes(router *mux.Router) {
 	apiV1.HandleFunc("/projects/{id}/send-message", projectHandler.SendMessageToChannel).Methods("POST")
 	apiV1.HandleFunc("/projects/{id}/webhook", projectWebhookHandler.UpdateWebhook).Methods("PUT")
 	apiV1.HandleFunc("/projects/{id}/webhook", projectWebhookHandler.GenerateWebhook).Methods("POST")
+	apiV1.HandleFunc("/projects/{id}/source", projectHandler.UpdateProjectSource).Methods("PUT")
 	apiV1.HandleFunc("/projects/{projectID}/templates", templateHandler.GetTemplates).Methods("GET")
 	apiV1.HandleFunc("/projects/{projectID}/templates", templateHandler.AddTemplate).Methods("POST")
+	apiV1.HandleFunc("/projects/{projectID}/templates/event-type/{eventType}", templateHandler.GetTemplateByEventType).Methods("GET")
 
 	apiV1.HandleFunc("/templates/{templateID}", templateHandler.UpdateTemplate).Methods("PUT")
 	apiV1.HandleFunc("/templates/{templateID}", templateHandler.DeleteTemplate).Methods("DELETE")

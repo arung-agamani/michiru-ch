@@ -55,6 +55,17 @@ func (r *TemplateRepository) GetByID(templateID string) (*models.Template, error
 	return &template, nil
 }
 
+func (r *TemplateRepository) GetByEventType(projectID, eventType string) (*models.Template, error) {
+	query := `SELECT id, project_id, event_type, template, description, created_at, updated_at 
+			  FROM templates WHERE project_id = $1 AND event_type = $2`
+	var template models.Template
+	err := r.DB.Get(&template, query, projectID, eventType)
+	if err != nil {
+		return nil, err
+	}
+	return &template, nil
+}
+
 func (r *TemplateRepository) Update(template *models.Template) error {
 	query := `UPDATE templates 
               SET event_type = $1, template = $2, description = $3, updated_at = CURRENT_TIMESTAMP 

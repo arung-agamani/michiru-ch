@@ -2,20 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import httpClient, { APIResponse } from "../../lib/httpClient.ts";
 import { Link } from "react-router-dom";
-import DataTable from "../DataTable.tsx";
+import { EventTemplate } from "../../types.ts";
 
 interface Props {
     projectId: string;
-}
-
-interface EventTemplate {
-    id: string;
-    project_id: string;
-    event_type: string;
-    template: string;
-    description?: string;
-    created_at: string;
-    updated_at: string;
 }
 
 const columns: ColumnDef<EventTemplate>[] = [
@@ -42,6 +32,7 @@ const AvailableEvents = [
     "pull_request",
     "issue",
     "issue_comment",
+    "ping",
 ] as const;
 
 const EventTemplateMapping: React.FC<Props> = ({ projectId }) => {
@@ -80,11 +71,19 @@ const EventTemplateMapping: React.FC<Props> = ({ projectId }) => {
                 }
                 return (
                     <div key={event}>
-                        <p className="text-lg ">
+                        <p className="text-lg">
                             Event Type:{" "}
-                            <span className="font-semibold">
-                                {eventTemplate?.event_type}
-                            </span>
+                            <Link
+                                to={
+                                    "event-templates/" +
+                                    eventTemplate?.event_type
+                                }
+                                className="text-blue-500 hover:underline"
+                            >
+                                <span className="font-semibold">
+                                    {eventTemplate?.event_type}
+                                </span>
+                            </Link>
                         </p>
                         <p className="text-sm text-gray-500">
                             {eventTemplate?.description}

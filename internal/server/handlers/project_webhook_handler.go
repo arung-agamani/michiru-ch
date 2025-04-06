@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"michiru/internal/models"
 	"michiru/internal/repository"
@@ -163,9 +164,14 @@ func (h *ProjectWebhookHandler) HandleWebhookPayload(w http.ResponseWriter, r *h
 		utils.WriteBadRequestJSON(w, []string{"Invalid webhook URL"})
 		return
 	}
-
-	hook, _ := github.New(github.Options.Secret(*project.WebhookSecret))
-	payload, err := hook.Parse(r, github.PushEvent)
+	var webhookSecret string
+	if project.WebhookSecret != nil {
+		webhookSecret = *project.WebhookSecret
+	} else {
+		webhookSecret = ""
+	}
+	hook, _ := github.New(github.Options.Secret(webhookSecret))
+	payload, err := hook.Parse(r, github.PushEvent, github.PingEvent)
 	if err != nil {
 		if err == github.ErrEventNotFound {
 			log.Printf("Event not found")
@@ -176,43 +182,56 @@ func (h *ProjectWebhookHandler) HandleWebhookPayload(w http.ResponseWriter, r *h
 		return
 	}
 
-	switch payload := payload.(type) {
-
-	case github.PushPayload:
-		push := payload
-		log.Printf("Received push event for %s", push.Repository.FullName)
-
-		templateRepo := repository.NewTemplateRepository(h.Repo.DB)
-		templates, err := templateRepo.GetByProjectID(id)
-		if err != nil {
-			log.Printf("Error getting templates: %v", err)
-			utils.WriteInternalServerErrorJSON(w, []string{"Failed to retrieve templates"})
-			return
-		}
-
-		var templateContent string
-		for _, template := range templates {
-			if template.EventType == "push" {
-				templateContent = template.Template
-				break
-			}
-		}
-
-		if templateContent == "" {
-			log.Printf("No template found for push event")
-			utils.WriteBadRequestJSON(w, []string{"No template found for push event"})
-			return
-		}
-
-		message := formatTemplate(templateContent, payload)
-
-		sendPushEventNotification(message, project)
-		utils.WriteSuccessJSON(w, "Received push event")
-	default:
-		log.Printf("Received unsupported event")
-		utils.WriteBadRequestJSON(w, []string{"Invalid payload. Only accepting PushEvent"})
+	templateRepo := repository.NewTemplateRepository(h.Repo.DB)
+	templates, err := templateRepo.GetByProjectID(id)
+	if err != nil {
+		log.Printf("Error getting templates: %v", err)
+		utils.WriteInternalServerErrorJSON(w, []string{"Failed to retrieve templates"})
 		return
 	}
+
+	var templateContent string
+
+	switch payload.(type) {
+	case github.PingPayload:
+		templateContent, err = getTemplateByEvent(templates, string(github.PingEvent))
+		if err != nil {
+			log.Printf("Error getting template by event: %v", err)
+			utils.WriteInternalServerErrorJSON(w, []string{"Failed to retrieve template"})
+			return
+		}
+	case github.PushPayload:
+		templateContent, err = getTemplateByEvent(templates, string(github.PushEvent))
+		if err != nil {
+			log.Printf("Error getting template by event: %v", err)
+			utils.WriteInternalServerErrorJSON(w, []string{"Failed to retrieve template"})
+			return
+		}
+	default:
+		log.Printf("Received unsupported event")
+		utils.WriteBadRequestJSON(w, []string{"Invalid payload. Only accepting PushEvent and PingEvent"})
+		return
+	}
+
+	if templateContent == "" {
+		log.Printf("No template found for the received event")
+		utils.WriteBadRequestJSON(w, []string{"No template found for the received event"})
+		return
+	}
+
+	message := formatTemplate(templateContent, payload)
+
+	sendPushEventNotification(message, project)
+	utils.WriteSuccessJSON(w, "Received push event")
+}
+
+func getTemplateByEvent(templates []models.Template, eventType string) (string, error) {
+	for _, template := range templates {
+		if template.EventType == eventType {
+			return template.Template, nil
+		}
+	}
+	return "", fmt.Errorf("template not found for event type: %s", eventType)
 }
 
 func formatTemplate(templateContent string, data any) string {

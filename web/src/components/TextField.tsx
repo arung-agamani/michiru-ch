@@ -7,6 +7,7 @@ interface TextFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
     editMode?: boolean;
     register: UseFormRegisterReturn;
     stacked?: boolean;
+    viewAsLink?: boolean;
 }
 
 export const TextField: React.FC<TextFieldProps> = ({
@@ -14,9 +15,12 @@ export const TextField: React.FC<TextFieldProps> = ({
     editMode = true,
     register,
     stacked = false,
+    viewAsLink = false,
     ...props
 }) => {
     const { formState } = useFormContext();
+    // formState.defaultValues?.[register.name]
+    // render the above value when not in edit mode, also render as a link if viewAsLink is true
     return (
         <div
             className={cn(
@@ -27,7 +31,22 @@ export const TextField: React.FC<TextFieldProps> = ({
             <label className="font-bold">{label}</label>
             {!editMode ? (
                 <span className="text-xl leading-[34px]">
-                    {formState.defaultValues?.[register.name] ?? "No data"}
+                    {formState.defaultValues?.[register.name] ? (
+                        viewAsLink ? (
+                            <a
+                                href={formState.defaultValues?.[register.name]}
+                                target="_blank"
+                                className="text-blue-500 hover:underline"
+                            >
+                                {formState.defaultValues?.[register.name]}
+                            </a>
+                        ) : (
+                            formState.defaultValues?.[register.name]
+                        )
+                    ) : (
+                        "No data"
+                    )}
+                    {}
                 </span>
             ) : (
                 <Input

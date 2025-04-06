@@ -2,7 +2,6 @@ import { Link, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { FormProvider, useForm } from "react-hook-form";
 import httpClient, { APIResponse } from "../../../lib/httpClient.ts";
-import { Project } from "./types.ts";
 import TextField from "../../../components/TextField.tsx";
 import TextArea from "../../../components/TextArea.tsx";
 import { useState } from "react";
@@ -12,6 +11,8 @@ import {
 } from "../../../components/Typography.tsx";
 import EventTemplateMapping from "../../../components/ProjectDetail/EventTemplateMapping.tsx";
 import { FullscreenLoader } from "../../../components/Loader.tsx";
+import { Project } from "../../../types.ts";
+import ProjectSource from "../../../components/ProjectDetail/ProjectSource.tsx";
 
 type ProjectResponse = APIResponse<Project>;
 
@@ -143,7 +144,7 @@ const ProjectDetailPage = () => {
                             </button>
                         )}
                     </div>
-                    {/* <div className="flex flex-col">
+                    <div className="flex flex-col">
                         <div className="mb-4">
                             <h2 className="font-semibold">Added By</h2>
                             <p>{data.added_by}</p>
@@ -165,10 +166,24 @@ const ProjectDetailPage = () => {
                             </div>
                         )}
                         {data.webhook_url && (
-                            <div className="mb-4">
-                                <h2 className="font-semibold">Webhook URL</h2>
-                                <p>{data.webhook_url}</p>
-                            </div>
+                            <>
+                                <div className="mb-4">
+                                    <h2 className="font-semibold">
+                                        Webhook URL String
+                                    </h2>
+                                    <p>{data.webhook_url}</p>
+                                </div>
+                                <div className="mb-4">
+                                    <h2 className="font-semibold">
+                                        Full Webhook URL
+                                    </h2>
+                                    <p className="text-blue-500 ">
+                                        {globalThis.location.origin}
+                                        /api/v1/projects/{projectId}/webhook/
+                                        {data.webhook_url}
+                                    </p>
+                                </div>
+                            </>
                         )}
                         {data.webhook_secret && (
                             <div className="mb-4">
@@ -185,7 +200,19 @@ const ProjectDetailPage = () => {
                         >
                             {data.webhook_url && "Re-"}Generate Webhook URL
                         </button>
-                    </div> */}
+                    </div>
+                </div>
+
+                <div className="bg-white shadow-md rounded p-4 mt-4">
+                    <div className="flex flex-col justify-between">
+                        <div>
+                            <SectionTitle>Project Source</SectionTitle>
+                            <SectionDescription>
+                                General information on project source/repository
+                            </SectionDescription>
+                        </div>
+                        <ProjectSource />
+                    </div>
                 </div>
             </FormProvider>
             <div className="bg-white shadow-md rounded p-4 mt-4">

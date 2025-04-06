@@ -55,7 +55,7 @@ func (h *TemplateHandler) GetTemplates(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} utils.Response{error=[]string}
 // @Router /api/v1/projects/{projectID}/templates [post]
 func (h *TemplateHandler) AddTemplate(w http.ResponseWriter, r *http.Request) {
-	supportedEventTypes := []string{"push", "pull_request", "issue_comment", "release", "workflow_dispatch"}
+	supportedEventTypes := []string{"push", "pull_request", "issue_comment", "release", "workflow_dispatch", "ping"}
 
 	var template models.Template
 	if err := json.NewDecoder(r.Body).Decode(&template); err != nil {
@@ -142,4 +142,34 @@ func (h *TemplateHandler) DeleteTemplate(w http.ResponseWriter, r *http.Request)
 	}
 
 	utils.WriteSuccessJSON(w, map[string]string{"message": "Template deleted successfully"})
+}
+
+// GetTemplateByEventType godoc
+// @Summary Get a template by event type
+// @Description Retrieve a template associated with a specific project and event type
+// @Tags Templates
+// @Param projectID path string true "Project ID"
+// @Param eventType path string true "Event type"
+// @Success 200 {object} utils.Response{data=models.Template}
+// @Failure 400 {object} utils.Response{error=[]string}
+// @Failure 500 {object} utils.Response{error=[]string}
+// @Router /api/v1/projects/{projectID}/templates/event-type/{eventType} [get]
+func (h *TemplateHandler) GetTemplateByEventType(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	projectID := vars["projectID"]
+	eventType := vars["eventType"]
+
+	template, err := h.Repo.GetByEventType(projectID, eventType)
+	if err != nil {
+		log.Printf("Error fetching template by event type: %v", err)
+		utils.WriteInternalServerErrorJSON(w, []string{"Failed to fetch template"})
+		return
+	}
+
+	if template == nil {
+		utils.WriteNotFoundJSON(w, []string{"Template not found"})
+		return
+	}
+
+	utils.WriteSuccessJSON(w, template)
 }

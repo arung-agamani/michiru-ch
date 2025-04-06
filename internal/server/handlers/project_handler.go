@@ -160,6 +160,43 @@ func (h *ProjectHandler) UpdateProject(w http.ResponseWriter, r *http.Request) {
 	utils.WriteSuccessJSON(w, project)
 }
 
+// update project source auth token
+
+// UpdateProjectSourceAuthToken godoc
+// @Summary Update a project's source authentication token by ID
+// @Description Updates a project's source authentication token using the provided ID and request body
+// @Tags projects
+// @Accept  json
+// @Produce  json
+// @Param id path string true "Project ID"
+// @Param project body models.Project true "Updated project data"
+// @Success 200 {object} utils.Response{data=models.Project}
+// @Failure 400 {object} utils.Response{error=[]string}
+// @Failure 500 {object} utils.Response{error=[]string}
+// @Router /api/v1/projects/{id}/source [put]
+func (h *ProjectHandler) UpdateProjectSource(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	if id == "" {
+		utils.WriteBadRequestJSON(w, []string{"Missing project ID"})
+		return
+	}
+	var project models.Project
+	if err := json.NewDecoder(r.Body).Decode(&project); err != nil {
+		utils.WriteBadRequestJSON(w, []string{"Invalid request payload"})
+		return
+	}
+
+	project.ID = id
+	project.UpdatedAt = time.Now().Format(time.RFC3339)
+	if err := h.Repo.UpdateProjectSource(&project); err != nil {
+		log.Printf("Error updating project source auth token: %v", err)
+		utils.WriteInternalServerErrorJSON(w, []string{"Failed to update project source auth token"})
+		return
+	}
+	utils.WriteSuccessJSON(w, project)
+}
+
 // DeleteProject godoc
 // @Summary Delete a project by ID
 // @Description Deletes a project using the provided ID
